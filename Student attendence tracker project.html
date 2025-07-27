@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Attendance Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    input {
+      padding: 8px;
+      width: 200px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    #reset-btn {
+      background: #333;
+      color: white;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .summary {
+      font-weight: bold;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .status-present {
+      color: green;
+      font-weight: bold;
+    }
+
+    .status-absent {
+      color: red;
+      font-weight: bold;
+    }
+
+    .btn-present {
+      background: green;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .btn-absent {
+      background: red;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .highlight {
+      background-color: yellow;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Student Attendance Tracker</h1>
+  <h5>Opeate :- press 0 for absent and 1 for present</h5>
+
+  <div class="top-bar">
+    <div class="summary">
+      <div>Total Absent: <span id="totalAbsent">0</span></div>
+      <div>Absent Roll Nos: <span id="absentList">None</span></div>
+    </div>
+
+    <input type="number" id="searchRoll" placeholder="Enter Roll No (101–280)" min="101" max="280" onkeyup="searchRoll(event)">
+    <button id="reset-btn" onclick="resetAttendance()">Reset Attendance</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Roll No</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="studentTableBody"></tbody>
+  </table>
+
+  <script>
+  const students = [
+  { roll: 101, name: "Jiya Kyada" },
+  { roll: 102, name: "Shah Dhvani Hitesh" },
+  { roll: 103, name: "Saraya Mohit Haresh" },
+  { roll: 104, name: "Zalavadiya Heet Siddharth" },
+  { roll: 105, name: "Darshil Dobariya" },
+  { roll: 106, name: "Nafisa Gandhi" },
+  { roll: 107, name: "Vasani Yashvi Niteshbhai" },
+  { roll: 108, name: "Delvadiya Manavkumar Kirtibhai" },
+  { roll: 109, name: "Ashara Palak Gopalbhai" },
+  { roll: 110, name: "Lunagariya Greshi Kamleshbhai" },
+  { roll: 111, name: "Nanavati Shrushti Gargesh" },
+  { roll: 112, name: "Ranpara Jay Manishbhai" },
+  { roll: 113, name: "Disha Mehta" },
+  { roll: 114, name: "Thummar Niraj Bhaveshbhai" },
+  { roll: 115, name: "Kachhava Nakul Umeshbhai" },
+  { roll: 116, name: "Kanabar Urva Darshanbhai" },
+  { roll: 117, name: "Nakar Dhruvil Hitesh" },
+  { roll: 118, name: "Poshiya Priyanshi Ajaybhai" },
+  { roll: 119, name: "Baravalia Dharitri Manharbhai" },
+  { roll: 120, name: "Muchhara Kashish Hiteshbhai" },
+  { roll: 121, name: "Chauhan Aditya Sureshbhai" },
+  { roll: 122, name: "Harsora Sakshi Ajaybhai" },
+  { roll: 123, name: "Katrodiya Sahil Rajeshbhai" },
+  { roll: 124, name: "Trambadiya Parikshit Parimalbhai" },
+  { roll: 125, name: "Padariya Preya Parasbhai" },
+  { roll: 126, name: "Gambhava Krushiben Manojbhai" },
+  { roll: 127, name: "Jadeja Vishwrajsinh Krushnasinh" },
+  { roll: 128, name: "Patel Jiya Sandipbhai" },
+  { roll: 129, name: "Pipalava Smit Ashvinbhai" },
+  { roll: 130, name: "Gohil Harshrajsinh Jitendrasinh" },
+  { roll: 131, name: "Kathiriya Arshi Keshubhai" },
+  { roll: 132, name: "Undhad Vishwa Rajesh" },
+  { roll: 133, name: "Diya Raiyani" },
+  { roll: 134, name: "Chavda Maulik Vinodbhai" },
+  { roll: 135, name: "Chavda Priyanka Prabodhbhai" },
+  { roll: 136, name: "Chavda Virendrasinh Ashwinbhai" },
+  { roll: 137, name: "Galani Krunal Chetanbhai" },
+  { roll: 138, name: "Kavar Suchi Vasantbhai" },
+  { roll: 139, name: "Odedara Nilesh Parbat" },
+  { roll: 140, name: "Vasani Dishita Nikhilkumar" },
+  { roll: 141, name: "Vachhani Vaishvi Manojkumar" },
+  { roll: 142, name: "Bhadania Ronit Yatinbhai" },
+  { roll: 143, name: "Chauhan Jenil Virenbhai" },
+  { roll: 144, name: "Virpara Krisha Rajeshbhai" },
+  { roll: 145, name: "Chandra Darshit Hiteshbhai" },
+  { roll: 146, name: "Detroja Ruchit Arvindbhai" },
+  { roll: 147, name: "Kapuriya Hepin Pravinbhai" },
+  { roll: 148, name: "Gohel Smit Ashvinbhai" },
+  { roll: 149, name: "Patel Kirtan Amitbhai" },
+  { roll: 150, name: "Ginoya Deep Kantilal" },
+  { roll: 151, name: "Marvaniya Jainish Dharmendrabhai" },
+  { roll: 152, name: "Ajudiya Yash Nareshbhai" },
+  { roll: 153, name: "Manas Borisagar" },
+  { roll: 154, name: "Joshi Soham Kamleshbhai" },
+  { roll: 155, name: "Kakadiya Khilan Manishbhai" },
+  { roll: 156, name: "Sidhdhapura Dhaval Dharmeshbhai" },
+  { roll: 157, name: "Sitapara Aryan Sunilbhai" },
+  { roll: 158, name: "Bhatasana Nainshi Pareshbhai" },
+  { roll: 159, name: "Malvaniya Viraj Jatinbhai" },
+  { roll: 160, name: "Tanisha Pambhar" },
+  { roll: 161, name: "Padshala Kuldeep Rajendrakumar" },
+  { roll: 162, name: "Bhimani Vishva Manishbhai" },
+  { roll: 163, name: "Karan Anushka Pintubhai" },
+  { roll: 164, name: "Vyas Kavya Sachin" },
+  { roll: 165, name: "Kamani Purna Hareshbhai" },
+  { roll: 166, name: "Mori Nandita Renishkumar" },
+  { roll: 167, name: "Ratanghayra Pankti Himanshu" },
+  { roll: 168, name: "Rupala Nikhil Kashmeeraben" },
+  { roll: 169, name: "Jadeja Shivrajsinh Girirajsinh" },
+  { roll: 170, name: "Hirva Satani" },
+  { roll: 171, name: "Raiyani Jenil Sanjaybhai" },
+  { roll: 172, name: "Chandpa Prince Sureshbhai" },
+  { roll: 173, name: "Faldu Vrajesh Sanjaybhai" },
+  { roll: 174, name: "Khambholiya Manya Parasharbhai" },
+  { roll: 175, name: "Prajapati Kaivalya Samir" },
+  { roll: 176, name: "Moral Aadit Shaileshbhai" },
+  { roll: 177, name: "Shihora Vibhu Chetanbhai" },
+  { roll: 178, name: "Kanani Kruti Jayeshbhai" },
+  { roll: 179, name: "Karoliya Princekumar Sandipbhai" },
+  { roll: 180, name: "Khunt Rutvi Hiteshbhai" },
+  { roll: 181, name: "Charadva Abhishek Virenbhai" },
+  { roll: 182, name: "Dave Krisha Kalpeshbhai" },
+  { roll: 183, name: "Janvi Kalaria" },
+  { roll: 184, name: "Rajwani Rohan Malik" },
+  { roll: 185, name: "Rana Parthrajsinh Bhupatsinh" },
+  { roll: 186, name: "Solanki Ronak Arvindbhai" },
+  { roll: 187, name: "Panchal Vedantkumar Niravbhai" },
+  { roll: 188, name: "Ambasana Venisha Hitenbhai" },
+  { roll: 189, name: "Raichura Smeet Rohitkumar" },
+  { roll: 190, name: "Gambhava Mirali Sureshbhai" },
+  { roll: 191, name: "Dave Dhruv Viralkumar" },
+  { roll: 192, name: "Ghetiya Ritu Pankajbhai" },
+  { roll: 193, name: "Radhanpara Saumya Jatinbhai" },
+  { roll: 194, name: "Yadav Gaurav Kaushikbhai" },
+  { roll: 195, name: "Buddhadev Misri Sanjaybhai" },
+  { roll: 196, name: "Joshi Kairav Paren" },
+  { roll: 197, name: "Savaliya Dhruvi Bharatbhai" },
+  { roll: 198, name: "Radhanpura Jeel Nimish" },
+  { roll: 199, name: "Savaliya Priyanshi Sureshbhai" },
+  { roll: 200, name: "Zala Bhavyadeepsinh Pruthvirajsinh" },
+  { roll: 201, name: "Sinha Milankumar Sujitkumar" },
+  { roll: 202, name: "Lakhtaria Kevin Homin" },
+  { roll: 203, name: "Moliya Kartavya Bhaveshbhai" },
+  { roll: 204, name: "Monpara Nij Hareshbhai" },
+  { roll: 205, name: "Divya Thakar" },
+  { roll: 206, name: "Mendapara Piyu Amishbhai" },
+  { roll: 207, name: "Pandya Karan Tusharbhai" },
+  { roll: 208, name: "Raval Meet Mohitkumar" },
+  { roll: 209, name: "Virpariya Heer Manishbhai" },
+  { roll: 210, name: "Bhanushali Hiral Bhaven" },
+  { roll: 211, name: "Kamaliya Akashkumar Rameshbhai" },
+  { roll: 212, name: "Popat Honey Nileshbhai" },
+  { roll: 213, name: "Badrakiya Meet Bharatbhai" },
+  { roll: 214, name: "Kanani Kavit Nareshbhai" },
+  { roll: 215, name: "Ambaliya Manan Jayeshbhai" },
+  { roll: 216, name: "Hinsu Umang Bharatbhai" },
+  { roll: 217, name: "Kakaniya Bhavy Niteshbhai" },
+  { roll: 218, name: "Padia Kartik Balkrishna" },
+  { roll: 219, name: "Mankada Hasan Shabbirhusain" },
+  { roll: 220, name: "Mehta Dhairy Kalpeshbhai" },
+  { roll: 221, name: "Mehta Het Lalitkumar" },
+  { roll: 222, name: "Kahan Sanghani" },
+  { roll: 223, name: "Gotani Himesh Sanjaybhai" },
+  { roll: 224, name: "Narola Yash Nileshbhai" },
+  { roll: 225, name: "Targata Dharmishtha Arjanbhai" },
+  { roll: 226, name: "Bhuva Tirth Shaileshbhai" },
+  { roll: 227, name: "Jadeja Yashraj Lakhdhirsinh" },
+  { roll: 228, name: "Krisha Pujara" },
+  { roll: 229, name: "Varsani Ritul Hirji" },
+  { roll: 230, name: "Parmar Dhyey Dharmendra" },
+  { roll: 231, name: "Shingala Mansi Rajeshbhai" },
+  { roll: 232, name: "Dobariya Jeel Upendrabhai" },
+  { roll: 233, name: "Khant Mannkumar Jigneshbhai" },
+  { roll: 234, name: "Yadav Neel Hiteshbhai" },
+  { roll: 235, name: "Andodariya Yash Maheshbhai" },
+  { roll: 236, name: "Hirani Jeelkumar Sanjaybhai" },
+  { roll: 237, name: "Mankad Shyamsundar Mitbhai" },
+  { roll: 238, name: "Agavan Rohan Farukbhai" },
+  { roll: 239, name: "Bhadja Zeel Satishkumar" },
+  { roll: 240, name: "Shreya Vijaybhai Bhundia" },
+  { roll: 241, name: "Aghara Keyur Hiteshbhai" },
+  { roll: 242, name: "Buddhadev Deep Nitinbhai" },
+  { roll: 243, name: "Godham Meet Maheshbhai" },
+  { roll: 244, name: "Katariya Trisha Ashvinbhai" },
+  { roll: 245, name: "Vekariya Jay Bipinbhai" },
+  { roll: 246, name: "Rutvi Gautami" },
+  { roll: 247, name: "Sankaliya Aryan Ashokbhai" },
+  { roll: 248, name: "Ghadiya Yashvi Sanjaybhai" },
+  { roll: 249, name: "Ved Chatvani" },
+  { roll: 250, name: "Ghorai Swati Sanjib" },
+  { roll: 251, name: "Karena Radhika Bharatbhai" },
+  { roll: 252, name: "Pandya Kruti Tusharbhai" },
+  { roll: 253, name: "Patel Tejkumar Niteshbhai" },
+  { roll: 254, name: "Sagpariya Mahee Nitinbhai" },
+  { roll: 255, name: "Sherasiya Shyam Sureshbhai" },
+  { roll: 256, name: "Liya Hirvita Rajendra" },
+  { roll: 257, name: "Ahir Krishna Manishbhai" },
+  { roll: 258, name: "Parmar Devanshu Gopalbhai" },
+  { roll: 259, name: "Tivari Astha Sureshbhai" },
+  { roll: 260, name: "Pal Kana Odedra" },
+  { roll: 261, name: "Sorathiya Nabhag Sanjaybhai" },
+  { roll: 262, name: "Chauhan Vishal Girishbhai" },
+  { roll: 263, name: "Kuchhadiya Vanita Bhima" },
+  { roll: 264, name: "Bhimani Naman Chiragbhai" },
+  { roll: 265, name: "Diyora Miraj Bhaveshbhai" },
+  { roll: 266, name: "Gajera Rakshit Ketanbhai" },
+  { roll: 267, name: "Parmar Darpan Jitendra" },
+  { roll: 268, name: "Trivedi Manan Vijaykumar" },
+  { roll: 269, name: "Dave Maharshi Kirtikumar" },
+  { roll: 270, name: "Param Rameshbhai Kotadiya" },
+  { roll: 271, name: "Patel Archi Pradipbhai" },
+  { roll: 272, name: "Saradhara Yug Vrajbhushanbhai" },
+  { roll: 273, name: "Padhariya Ruturajsinh Sureshbhai" },
+  { roll: 274, name: "Vegad Jenil Ashokbhai" },
+  { roll: 275, name: "Patani Kismatbanu Shahidbhai" },
+  { roll: 276, name: "Savaliya Jinesh Kantilal" },
+  { roll: 277, name: "Tank Darshan Chetanbhai" },
+  { roll: 278, name: "Ghodasara Dev Ketanbhai" },
+  { roll: 279, name: "Pithadiya Yash Devendrabhai" },
+  { roll: 280, name: "Gohel Jenil Amitkumar" }
+  
+  ];
+
+  const attendance = students.map(s => ({ ...s, status: "Present" }));
+  let currentIndex = 0;
+
+  function updateTable() {
+    const tbody = document.getElementById("studentTableBody");
+    tbody.innerHTML = "";
+
+    attendance.forEach((student, index) => {
+      const row = document.createElement("tr");
+      row.id = `row-${student.roll}`;
+
+      row.innerHTML = `
+        <td>${student.roll}</td>
+        <td>${student.name}</td>
+        <td class="${student.status === 'Present' ? 'status-present' : 'status-absent'}">${student.status}</td>
+        <td>
+          <button class="btn-present" onclick="markPresent(${index})">Present</button>
+          <button class="btn-absent" onclick="markAbsent(${index})">Absent</button>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+    updateSummary();
+    highlightCurrent();
+  }
+
+  function markPresent(index) {
+    attendance[index].status = "Present";
+    updateTable();
+  }
+
+  function markAbsent(index) {
+    attendance[index].status = "Absent";
+    updateTable();
+  }
+
+  function resetAttendance() {
+    attendance.forEach(s => s.status = "Present");
+    currentIndex = 0;
+    updateTable();
+  }
+
+  function updateSummary() {
+    const absent = attendance.filter(s => s.status === "Absent");
+    document.getElementById("totalAbsent").textContent = absent.length;
+    document.getElementById("absentList").textContent = absent.length > 0
+      ? absent.map(s => s.roll).join(", ")
+      : "None";
+  }
+
+  function highlightCurrent() {
+    document.querySelectorAll("tr").forEach(row => row.classList.remove("highlight"));
+    const student = attendance[currentIndex];
+    if (!student) return;
+    const row = document.getElementById(`row-${student.roll}`);
+    if (row) {
+      row.scrollIntoView({ behavior: "smooth", block: "center" });
+      row.classList.add("highlight");
+    }
+  }
+
+  function searchRoll(event) {
+  const rollInput = parseInt(event.target.value);
+  if (!rollInput || isNaN(rollInput)) return;
+
+  const index = attendance.findIndex(s => s.roll === rollInput);
+  if (index === -1) return;
+
+  currentIndex = index;
+  highlightCurrent();
+}
+
+ document.addEventListener("keydown", function (event) {
+  const activeTag = document.activeElement.tagName.toLowerCase();
+  if (activeTag === "input") return;
+
+  if (currentIndex >= attendance.length) return;
+
+  if (event.key === "0") {
+    attendance[currentIndex].status = "Absent";
+    currentIndex++;
+    updateTable();
+  } else if (event.key === "1") {
+    attendance[currentIndex].status = "Present";
+    currentIndex++;
+    updateTable();
+  }
+});
+
+
+  // Start from first student on load
+  window.onload = () => {
+    updateTable();
+  };
+</script>
